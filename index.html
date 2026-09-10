@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f7f7f5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Ballaststoffe" />
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <title>Ballaststoff-Tracker</title>
+  <style>
+    :root{
+      --bg:#f7f7f5; --card:#ffffff; --text:#1f2320; --muted:#70756f;
+      --line:#e6e7e3; --accent:#2f7d4a; --accent-soft:#e7f2ea; --danger:#b34a4a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,Arial,sans-serif;
+      background:var(--bg); color:var(--text);
+    }
+    .wrap{max-width:620px;margin:0 auto;padding:18px 16px 40px}
+    h1{font-size:28px;margin:8px 0 2px}
+    .date{color:var(--muted);margin-bottom:18px}
+    .card{
+      background:var(--card); border:1px solid var(--line); border-radius:20px;
+      padding:18px; margin-bottom:14px; box-shadow:0 1px 2px rgba(0,0,0,.03);
+    }
+    .progressTop{display:flex;align-items:end;justify-content:space-between;gap:12px}
+    .big{font-size:36px;font-weight:750;letter-spacing:-1px}
+    .goal{color:var(--muted);font-size:15px}
+    .bar{height:14px;background:#eceeea;border-radius:999px;overflow:hidden;margin-top:14px}
+    .fill{height:100%;background:var(--accent);width:0%;transition:width .25s}
+    .remaining{margin-top:10px;color:var(--muted);font-size:14px}
+    button{
+      border:none;border-radius:14px;padding:12px 14px;font-weight:650;font-size:16px;
+      cursor:pointer;
+    }
+    .primary{background:var(--accent);color:white;width:100%}
+    .secondary{background:var(--accent-soft);color:var(--accent)}
+    .ghost{background:#f1f2ef;color:var(--text)}
+    .danger{background:#f8eaea;color:var(--danger)}
+    .row{display:flex;gap:10px}
+    .row > *{flex:1}
+    label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
+    input,select{
+      width:100%;padding:13px 12px;border:1px solid var(--line);border-radius:12px;
+      background:white;font-size:16px;color:var(--text);
+    }
+    .food{
+      display:flex;justify-content:space-between;gap:12px;align-items:center;
+      padding:13px 0;border-bottom:1px solid var(--line)
+    }
+    .food:last-child{border-bottom:none}
+    .foodName{font-weight:650}
+    .foodMeta{font-size:13px;color:var(--muted);margin-top:3px}
+    .foodFiber{font-weight:750;white-space:nowrap}
+    .iconBtn{padding:8px 10px;font-size:14px}
+    .sectionTitle{font-size:17px;font-weight:750;margin:0 0 10px}
+    .empty{color:var(--muted);font-size:14px;padding:8px 0}
+    .tabs{display:flex;gap:8px;margin-bottom:14px}
+    .tab{flex:1;background:#eceeea;color:var(--muted)}
+    .tab.active{background:var(--text);color:white}
+    .hidden{display:none !important}
+    .historyDay{padding:12px 0;border-bottom:1px solid var(--line)}
+    .historyDay:last-child{border-bottom:none}
+    .historyHeader{display:flex;justify-content:space-between;align-items:center}
+    .pill{font-size:12px;padding:5px 8px;border-radius:999px;background:#f0f1ee;color:var(--muted)}
+    .pill.ok{background:var(--accent-soft);color:var(--accent)}
+    .small{font-size:13px;color:var(--muted)}
+    .modal{
+      position:fixed;inset:0;background:rgba(0,0,0,.28);display:flex;align-items:flex-end;
+      justify-content:center;padding:0;z-index:20
+    }
+    .sheet{
+      width:100%;max-width:620px;background:var(--bg);border-radius:24px 24px 0 0;
+      padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto
+    }
+    .sheetHead{display:flex;justify-content:space-between;align-items:center}
+    .close{background:#eceeea;padding:8px 11px}
+    .hint{font-size:13px;color:var(--muted);line-height:1.4;margin-top:8px}
+    .savedItem{
+      display:flex;justify-content:space-between;align-items:center;gap:10px;
+      padding:10px 0;border-bottom:1px solid var(--line)
+    }
+    .savedItem:last-child{border-bottom:none}
+    .savedActions{display:flex;gap:6px}
+    .footer{font-size:12px;color:var(--muted);text-align:center;margin-top:18px;line-height:1.45}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Ballaststoffe</h1>
+    <div class="date" id="todayLabel"></div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="today">Heute</button>
+      <button class="tab" data-tab="history">Verlauf</button>
+      <button class="tab" data-tab="foods">Lebensmittel</button>
+    </div>
+
+    <section id="todayTab">
+      <div class="card">
+        <div class="progressTop">
+          <div>
+            <div class="big"><span id="totalFiber">0,0</span> g</div>
+            <div class="goal">von 30 g Tagesziel</div>
+          </div>
+          <div class="pill" id="goalPill">0 %</div>
+        </div>
+        <div class="bar"><div class="fill" id="progressFill"></div></div>
+        <div class="remaining" id="remainingText">Noch 30,0 g bis zum Tagesziel</div>
+      </div>
+
+      <button class="primary" id="addBtn">+ Lebensmittel hinzufügen</button>
+
+      <div class="card" style="margin-top:14px">
+        <div class="sectionTitle">Heute gegessen</div>
+        <div id="todayList"></div>
+      </div>
+    </section>
+
+    <section id="historyTab" class="hidden">
+      <div class="card">
+        <div class="sectionTitle">Letzte 14 Tage</div>
+        <div id="historyList"></div>
+      </div>
+    </section>
+
+    <section id="foodsTab" class="hidden">
+      <div class="card">
+        <div class="sectionTitle">Gespeicherte Lebensmittel</div>
+        <div id="savedFoods"></div>
+      </div>
+    </section>
+
+    <div class="footer">
+      Deine Einträge werden lokal in diesem Browser gespeichert. Für eine dauerhafte Nutzung auf dem iPhone am besten zum Home-Bildschirm hinzufügen.
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal">
+    <div class="sheet">
+      <div class="sheetHead">
+        <div class="sectionTitle" style="margin:0">Lebensmittel hinzufügen</div>
+        <button class="close" id="closeModal">Schließen</button>
+      </div>
+
+      <label>Gespeichertes Lebensmittel</label>
+      <select id="foodSelect">
+        <option value="">Neu eingeben …</option>
+      </select>
+
+      <label>Lebensmittel</label>
+      <input id="foodName" placeholder="z. B. Haferflocken">
+
+      <div class="row">
+        <div>
+          <label>Ballaststoffe pro 100 g</label>
+          <input id="fiberPer100" type="number" inputmode="decimal" step="0.1" min="0" placeholder="z. B. 10">
+        </div>
+        <div>
+          <label>Gegessene Menge (g)</label>
+          <input id="amount" type="number" inputmode="decimal" step="1" min="0" placeholder="z. B. 50">
+        </div>
+      </div>
+
+      <div class="hint" id="calcHint">Ergibt: 0,0 g Ballaststoffe</div>
+
+      <label style="display:flex;align-items:center;gap:9px;margin-top:14px">
+        <input type="checkbox" id="saveFood" style="width:auto">
+        Lebensmittel für später speichern
+      </label>
+
+      <button class="primary" id="saveEntry" style="margin-top:14px">Eintragen</button>
+    </div>
+  </div>
+
+<script>
+const GOAL = 30;
+const STORE = 'fiber-tracker-v1';
+
+const state = JSON.parse(localStorage.getItem(STORE) || '{"days":{},"foods":[]}');
+
+function persist(){ localStorage.setItem(STORE, JSON.stringify(state)); }
+function dateKey(d=new Date()){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function fmt(n){ return Number(n).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1}); }
+function parseNum(value){
+  if(value===null || value===undefined) return NaN;
+  return Number(String(value).trim().replace(',', '.'));
+}
+function prettyDate(key){
+  const [y,m,d]=key.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+}
+function todayEntries(){ return state.days[dateKey()] || []; }
+function total(entries){ return entries.reduce((s,e)=>s+Number(e.fiber||0),0); }
+
+function renderToday(){
+  const entries=todayEntries();
+  const sum=total(entries);
+  const pct=Math.min(100,(sum/GOAL)*100);
+  document.getElementById('totalFiber').textContent=fmt(sum);
+  document.getElementById('progressFill').style.width=pct+'%';
+  const pill=document.getElementById('goalPill');
+  pill.textContent=Math.round((sum/GOAL)*100)+' %';
+  pill.className='pill'+(sum>=GOAL?' ok':'');
+  document.getElementById('remainingText').textContent = sum>=GOAL
+    ? `Tagesziel erreicht · ${fmt(sum-GOAL)} g darüber`
+    : `Noch ${fmt(GOAL-sum)} g bis zum Tagesziel`;
+
+  const list=document.getElementById('todayList');
+  if(!entries.length){ list.innerHTML='<div class="empty">Noch nichts eingetragen.</div>'; return; }
+  list.innerHTML=entries.map((e,i)=>`
+    <div class="food">
+      <div>
+        <div class="foodName">${escapeHtml(e.name)}</div>
+        <div class="foodMeta">${fmt(e.amount)} g · ${fmt(e.per100)} g / 100 g</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="foodFiber">${fmt(e.fiber)} g</div>
+        <button class="danger iconBtn" onclick="deleteEntry(${i})">×</button>
+      </div>
+    </div>`).join('');
+}
+function deleteEntry(i){
+  const k=dateKey(); state.days[k].splice(i,1);
+  if(!state.days[k].length) delete state.days[k];
+  persist(); renderAll();
+}
+function renderHistory(){
+  const box=document.getElementById('historyList');
+  let rows=[];
+  for(let i=0;i<14;i++){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const k=dateKey(d), s=total(state.days[k]||[]);
+    rows.push(`<div class="historyDay">
+      <div class="historyHeader">
+        <div><strong>${prettyDate(k)}</strong></div>
+        <div class="pill ${s>=GOAL?'ok':''}">${fmt(s)} g</div>
+      </div>
+    </div>`);
+  }
+  box.innerHTML=rows.join('');
+}
+function renderFoods(){
+  const box=document.getElementById('savedFoods');
+  if(!state.foods.length){ box.innerHTML='<div class="empty">Noch keine Lebensmittel gespeichert.</div>'; return; }
+  box.innerHTML=state.foods
+    .slice().sort((a,b)=>a.name.localeCompare(b.name,'de'))
+    .map((f)=> {
+      const idx=state.foods.findIndex(x=>x.id===f.id);
+      return `<div class="savedItem">
+        <div>
+          <div class="foodName">${escapeHtml(f.name)}</div>
+          <div class="foodMeta">${fmt(f.per100)} g Ballaststoffe / 100 g</div>
+        </div>
+        <div class="savedActions">
+          <button class="secondary iconBtn" onclick="useFood('${f.id}')">Nutzen</button>
+          <button class="danger iconBtn" onclick="deleteFood('${f.id}')">×</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+function renderSelect(){
+  const sel=document.getElementById('foodSelect');
+  const current=sel.value;
+  sel.innerHTML='<option value="">Neu eingeben …</option>'+
+    state.foods.slice().sort((a,b)=>a.name.localeCompare(b.name,'de'))
+    .map(f=>`<option value="${f.id}">${escapeHtml(f.name)} (${fmt(f.per100)} g/100 g)</option>`).join('');
+  if([...sel.options].some(o=>o.value===current)) sel.value=current;
+}
+function deleteFood(id){
+  state.foods=state.foods.filter(f=>f.id!==id); persist(); renderAll();
+}
+function useFood(id){
+  openModal();
+  document.getElementById('foodSelect').value=id;
+  fillFromSelected();
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function renderAll(){ renderToday(); renderHistory(); renderFoods(); renderSelect(); }
+
+const modal=document.getElementById('modal');
+function openModal(){ modal.classList.remove('hidden'); }
+function closeModal(){
+  modal.classList.add('hidden');
+  document.getElementById('foodSelect').value='';
+  document.getElementById('foodName').value='';
+  document.getElementById('fiberPer100').value='';
+  document.getElementById('amount').value='';
+  document.getElementById('saveFood').checked=false;
+  updateCalc();
+}
+document.getElementById('addBtn').onclick=openModal;
+document.getElementById('closeModal').onclick=closeModal;
+modal.addEventListener('click',(e)=>{ if(e.target===modal) closeModal(); });
+document.querySelector('.sheet').addEventListener('click',e=>e.stopPropagation());
+
+function fillFromSelected(){
+  const id=document.getElementById('foodSelect').value;
+  const f=state.foods.find(x=>x.id===id);
+  if(f){
+    document.getElementById('foodName').value=f.name;
+    document.getElementById('fiberPer100').value=f.per100;
+    document.getElementById('saveFood').checked=false;
+  }
+  updateCalc();
+}
+document.getElementById('foodSelect').addEventListener('change',fillFromSelected);
+
+function calcFiber(){
+  const p=parseNum(document.getElementById('fiberPer100').value)||0;
+  const a=parseNum(document.getElementById('amount').value)||0;
+  return p*a/100;
+}
+function updateCalc(){ document.getElementById('calcHint').textContent=`Ergibt: ${fmt(calcFiber())} g Ballaststoffe`; }
+document.getElementById('fiberPer100').addEventListener('input',updateCalc);
+document.getElementById('amount').addEventListener('input',updateCalc);
+
+document.getElementById('saveEntry').onclick=()=>{
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  const name=document.getElementById('foodName').value.trim();
+  const per100=parseNum(document.getElementById('fiberPer100').value);
+  const amount=parseNum(document.getElementById('amount').value);
+  if(!name || !(per100>=0) || !(amount>0)){
+    alert('Bitte Lebensmittel, Ballaststoffe pro 100 g und eine Menge eingeben.');
+    return;
+  }
+  const fiber=per100*amount/100;
+  const k=dateKey();
+  if(!state.days[k]) state.days[k]=[];
+  state.days[k].push({name,per100,amount,fiber,createdAt:Date.now()});
+
+  if(document.getElementById('saveFood').checked){
+    const existing=state.foods.find(f=>f.name.toLowerCase()===name.toLowerCase());
+    if(existing) existing.per100=per100;
+    else state.foods.push({id:'f'+Date.now()+Math.random().toString(16).slice(2),name,per100});
+  }
+  persist(); closeModal(); renderAll();
+};
+
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['today','history','foods'].forEach(t=>document.getElementById(t+'Tab').classList.add('hidden'));
+    document.getElementById(btn.dataset.tab+'Tab').classList.remove('hidden');
+  };
+});
+
+document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('de-DE',{
+  weekday:'long',day:'2-digit',month:'long',year:'numeric'
+});
+
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+renderAll();
+</script>
+</body>
+</html>
