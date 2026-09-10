@@ -87,7 +87,15 @@
     .savedItem:last-child{border-bottom:none}
     .savedActions{display:flex;gap:6px}
     .footer{font-size:12px;color:var(--muted);text-align:center;margin-top:18px;line-height:1.45}
-  </style>
+  
+    .searchResults{background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:8px;overflow:hidden}
+    .searchResult{padding:11px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+    .searchResult:last-child{border-bottom:none}
+    .searchName{font-weight:650}
+    .searchMeta{font-size:12px;color:var(--muted);margin-top:2px}
+    .divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:14px 0}
+    .divider:before,.divider:after{content:"";height:1px;background:var(--line);flex:1}
+</style>
 </head>
 <body>
   <div class="wrap">
@@ -131,6 +139,7 @@
     <section id="foodsTab" class="hidden">
       <div class="card">
         <div class="sectionTitle">Gespeicherte Lebensmittel</div>
+        <input id="foodsSearch" placeholder="🔍 Lebensmittel suchen" autocomplete="off">
         <div id="savedFoods"></div>
       </div>
     </section>
@@ -147,10 +156,11 @@
         <button class="close" id="closeModal">Schließen</button>
       </div>
 
-      <label>Gespeichertes Lebensmittel</label>
-      <select id="foodSelect">
-        <option value="">Neu eingeben …</option>
-      </select>
+      <label>Gespeichertes Lebensmittel suchen</label>
+      <input id="foodSearch" placeholder="z. B. Tofu, Haferflocken …" autocomplete="off">
+      <div id="foodSearchResults" class="searchResults hidden"></div>
+
+      <div class="divider">oder neu eingeben</div>
 
       <label>Lebensmittel</label>
       <input id="foodName" placeholder="z. B. Haferflocken">
@@ -158,11 +168,11 @@
       <div class="row">
         <div>
           <label>Ballaststoffe pro 100 g</label>
-          <input id="fiberPer100" type="number" inputmode="decimal" step="0.1" min="0" placeholder="z. B. 10">
+          <input id="fiberPer100" type="text" inputmode="decimal" step="0.1" min="0" placeholder="z. B. 10">
         </div>
         <div>
           <label>Gegessene Menge (g)</label>
-          <input id="amount" type="number" inputmode="decimal" step="1" min="0" placeholder="z. B. 50">
+          <input id="amount" type="text" inputmode="decimal" step="1" min="0" placeholder="z. B. 50">
         </div>
       </div>
 
@@ -189,10 +199,7 @@ function dateKey(d=new Date()){
   return `${y}-${m}-${day}`;
 }
 function fmt(n){ return Number(n).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1}); }
-function parseNum(value){
-  if(value===null || value===undefined) return NaN;
-  return Number(String(value).trim().replace(',', '.'));
-}
+function parseNum(value){ if(value===null||value===undefined) return NaN; return Number(String(value).trim().replace(',', '.')); }
 function prettyDate(key){
   const [y,m,d]=key.split('-').map(Number);
   return new Date(y,m-1,d).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
@@ -249,49 +256,38 @@ function renderHistory(){
 }
 function renderFoods(){
   const box=document.getElementById('savedFoods');
-  if(!state.foods.length){ box.innerHTML='<div class="empty">Noch keine Lebensmittel gespeichert.</div>'; return; }
-  box.innerHTML=state.foods
-    .slice().sort((a,b)=>a.name.localeCompare(b.name,'de'))
-    .map((f)=> {
-      const idx=state.foods.findIndex(x=>x.id===f.id);
-      return `<div class="savedItem">
-        <div>
-          <div class="foodName">${escapeHtml(f.name)}</div>
-          <div class="foodMeta">${fmt(f.per100)} g Ballaststoffe / 100 g</div>
-        </div>
-        <div class="savedActions">
-          <button class="secondary iconBtn" onclick="useFood('${f.id}')">Nutzen</button>
-          <button class="danger iconBtn" onclick="deleteFood('${f.id}')">×</button>
-        </div>
-      </div>`;
-    }).join('');
+  const input=document.getElementById('foodsSearch');
+  const q=(input ? input.value : '').trim().toLowerCase();
+  const list=state.foods.slice().sort((a,b)=>a.name.localeCompare(b.name,'de')).filter(f=>f.name.toLowerCase().includes(q));
+  if(!list.length){ box.innerHTML='<div class="empty">'+(q?'Keine passenden Lebensmittel gefunden.':'Noch keine Lebensmittel gespeichert.')+'</div>'; return; }
+  box.innerHTML=list.map((f)=>`
+    <div class="savedItem">
+      <div>
+        <div class="foodName">${escapeHtml(f.name)}</div>
+        <div class="foodMeta">${fmt(f.per100)} g Ballaststoffe / 100 g</div>
+      </div>
+      <div class="savedActions">
+        <button class="secondary iconBtn" onclick="useFood('${f.id}')">Nutzen</button>
+        <button class="danger iconBtn" onclick="deleteFood('${f.id}')">×</button>
+      </div>
+    </div>`).join('');
 }
-function renderSelect(){
-  const sel=document.getElementById('foodSelect');
-  const current=sel.value;
-  sel.innerHTML='<option value="">Neu eingeben …</option>'+
-    state.foods.slice().sort((a,b)=>a.name.localeCompare(b.name,'de'))
-    .map(f=>`<option value="${f.id}">${escapeHtml(f.name)} (${fmt(f.per100)} g/100 g)</option>`).join('');
-  if([...sel.options].some(o=>o.value===current)) sel.value=current;
-}
+
 function deleteFood(id){
-  state.foods=state.foods.filter(f=>f.id!==id); persist(); renderAll();
+  state.foods=state.foods.filter(f=>f.id!==id); persist(); renderAll(); renderSearchResults();
 }
-function useFood(id){
-  openModal();
-  document.getElementById('foodSelect').value=id;
-  fillFromSelected();
-}
+function useFood(id){ openModal(); selectSavedFood(id); }
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
-function renderAll(){ renderToday(); renderHistory(); renderFoods(); renderSelect(); }
+function renderAll(){ renderToday(); renderHistory(); renderFoods(); }
 
 const modal=document.getElementById('modal');
-function openModal(){ modal.classList.remove('hidden'); }
+function openModal(){ modal.classList.remove('hidden'); const s=document.getElementById('foodSearch'); if(s) setTimeout(()=>s.focus(),50); }
 function closeModal(){
   modal.classList.add('hidden');
-  document.getElementById('foodSelect').value='';
+  const fs=document.getElementById('foodSearch'); if(fs) fs.value='';
+  const fr=document.getElementById('foodSearchResults'); if(fr) fr.classList.add('hidden');
   document.getElementById('foodName').value='';
   document.getElementById('fiberPer100').value='';
   document.getElementById('amount').value='';
@@ -300,20 +296,33 @@ function closeModal(){
 }
 document.getElementById('addBtn').onclick=openModal;
 document.getElementById('closeModal').onclick=closeModal;
-modal.addEventListener('click',(e)=>{ if(e.target===modal) closeModal(); });
-document.querySelector('.sheet').addEventListener('click',e=>e.stopPropagation());
+modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
+document.querySelector('.sheet').addEventListener('click', e=>e.stopPropagation());
 
-function fillFromSelected(){
-  const id=document.getElementById('foodSelect').value;
-  const f=state.foods.find(x=>x.id===id);
-  if(f){
-    document.getElementById('foodName').value=f.name;
-    document.getElementById('fiberPer100').value=f.per100;
-    document.getElementById('saveFood').checked=false;
-  }
-  updateCalc();
+
+
+
+function renderSearchResults(){
+  const input=document.getElementById('foodSearch');
+  const box=document.getElementById('foodSearchResults');
+  const q=(input ? input.value : '').trim().toLowerCase();
+  if(!q){ box.classList.add('hidden'); box.innerHTML=''; return; }
+  const hits=state.foods.filter(f=>f.name.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'de')).slice(0,8);
+  if(!hits.length){ box.innerHTML='<div class="searchResult"><div class="searchMeta">Keine gespeicherten Lebensmittel gefunden.</div></div>'; box.classList.remove('hidden'); return; }
+  box.innerHTML=hits.map(f=>`<div class="searchResult" onclick="selectSavedFood('${f.id}')"><div class="searchName">${escapeHtml(f.name)}</div><div class="searchMeta">${fmt(f.per100)} g / 100 g</div></div>`).join('');
+  box.classList.remove('hidden');
 }
-document.getElementById('foodSelect').addEventListener('change',fillFromSelected);
+function selectSavedFood(id){
+  const f=state.foods.find(x=>x.id===id); if(!f) return;
+  document.getElementById('foodName').value=f.name;
+  document.getElementById('fiberPer100').value=f.per100;
+  document.getElementById('foodSearch').value=f.name;
+  document.getElementById('foodSearchResults').classList.add('hidden');
+  document.getElementById('saveFood').checked=false;
+  document.getElementById('amount').focus(); updateCalc();
+}
+const foodSearchInput=document.getElementById('foodSearch'); if(foodSearchInput) foodSearchInput.addEventListener('input',renderSearchResults);
+const foodsSearchInput=document.getElementById('foodsSearch'); if(foodsSearchInput) foodsSearchInput.addEventListener('input',renderFoods);
 
 function calcFiber(){
   const p=parseNum(document.getElementById('fiberPer100').value)||0;
@@ -325,7 +334,6 @@ document.getElementById('fiberPer100').addEventListener('input',updateCalc);
 document.getElementById('amount').addEventListener('input',updateCalc);
 
 document.getElementById('saveEntry').onclick=()=>{
-  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
   const name=document.getElementById('foodName').value.trim();
   const per100=parseNum(document.getElementById('fiberPer100').value);
   const amount=parseNum(document.getElementById('amount').value);
