@@ -1,0 +1,346 @@
+[
+  {
+    "key": "kcal",
+    "name": "Energie",
+    "unit": "kcal",
+    "rec": {
+      "min": 1800,
+      "max": 1800,
+      "display": "1800",
+      "unit": "kcal"
+    }
+  },
+  {
+    "key": "carbs",
+    "name": "Kohlenhydrate",
+    "unit": "g",
+    "rec": {
+      "min": 215,
+      "max": 215,
+      "display": "215",
+      "unit": "g"
+    }
+  },
+  {
+    "key": "protein",
+    "name": "Protein",
+    "unit": "g",
+    "rec": {
+      "min": 100,
+      "max": 100,
+      "display": "100",
+      "unit": "g"
+    }
+  },
+  {
+    "key": "fat",
+    "name": "Fett",
+    "unit": "g",
+    "rec": {
+      "min": 60,
+      "max": 60,
+      "display": "60",
+      "unit": "g"
+    }
+  },
+  {
+    "key": "sat_fat",
+    "name": "Gesättigte Fettsäuren",
+    "unit": "g",
+    "rec": {
+      "min": 20,
+      "max": 20,
+      "display": "max. 20",
+      "unit": "g",
+      "maximum": true
+    }
+  },
+  {
+    "key": "mono_fat",
+    "name": "Einfach ungesättigte Fettsäuren",
+    "unit": "g",
+    "rec": null
+  },
+  {
+    "key": "poly_fat",
+    "name": "Mehrfach ungesättigte Fettsäuren",
+    "unit": "g",
+    "rec": null
+  },
+  {
+    "key": "fiber",
+    "name": "Ballaststoffe",
+    "unit": "g",
+    "rec": {
+      "min": 30,
+      "max": 30,
+      "display": "30",
+      "unit": "g"
+    }
+  },
+  {
+    "key": "calcium",
+    "name": "Calcium",
+    "unit": "mg",
+    "rec": {
+      "display": "1000",
+      "unit": "mg/Tag",
+      "min": 1000.0,
+      "max": 1000.0
+    }
+  },
+  {
+    "key": "chrom",
+    "name": "Chrom",
+    "unit": "µg",
+    "rec": {
+      "display": "30-100",
+      "unit": "µg/Tag",
+      "min": 30.0,
+      "max": 100.0
+    }
+  },
+  {
+    "key": "eisen",
+    "name": "Eisen",
+    "unit": "mg",
+    "rec": {
+      "display": "16",
+      "unit": "mg/Tag",
+      "min": 16.0,
+      "max": 16.0
+    }
+  },
+  {
+    "key": "jod",
+    "name": "Jod",
+    "unit": "µg",
+    "rec": {
+      "display": "150",
+      "unit": "µg/Tag",
+      "min": 150.0,
+      "max": 150.0
+    }
+  },
+  {
+    "key": "kalium",
+    "name": "Kalium",
+    "unit": "mg",
+    "rec": {
+      "display": "4000",
+      "unit": "mg/Tag",
+      "min": 4000.0,
+      "max": 4000.0
+    }
+  },
+  {
+    "key": "kupfer",
+    "name": "Kupfer",
+    "unit": "µg",
+    "rec": {
+      "display": "1,0-1,5",
+      "unit": "mg/Tag",
+      "min": 1000.0,
+      "max": 1500.0
+    }
+  },
+  {
+    "key": "linolsaeure",
+    "name": "Linolsäure (Omega-6)",
+    "unit": "g",
+    "rec": {
+      "display": "2,5",
+      "unit": "% der Energie",
+      "min": 2.5,
+      "max": 2.5,
+      "comparable": false
+    }
+  },
+  {
+    "key": "magnesium",
+    "name": "Magnesium",
+    "unit": "mg",
+    "rec": {
+      "display": "300",
+      "unit": "mg/Tag",
+      "min": 300.0,
+      "max": 300.0
+    }
+  },
+  {
+    "key": "mangan",
+    "name": "Mangan",
+    "unit": "µg",
+    "rec": {
+      "display": "2,0-5,0",
+      "unit": "mg/Tag",
+      "min": 2000.0,
+      "max": 5000.0
+    }
+  },
+  {
+    "key": "molybdaen",
+    "name": "Molybdän",
+    "unit": "µg",
+    "rec": {
+      "display": "50-100",
+      "unit": "µg/Tag",
+      "min": 50.0,
+      "max": 100.0
+    }
+  },
+  {
+    "key": "phosphor",
+    "name": "Phosphor",
+    "unit": "mg",
+    "rec": {
+      "display": "550",
+      "unit": "mg/Tag",
+      "min": 550.0,
+      "max": 550.0
+    }
+  },
+  {
+    "key": "selen",
+    "name": "Selen",
+    "unit": "µg",
+    "rec": {
+      "display": "60",
+      "unit": "µg/Tag",
+      "min": 60.0,
+      "max": 60.0
+    }
+  },
+  {
+    "key": "vitamin_a",
+    "name": "Vitamin A",
+    "unit": "µg RAE",
+    "rec": {
+      "display": "700",
+      "unit": "µg-RAE/Tag",
+      "min": 700.0,
+      "max": 700.0
+    }
+  },
+  {
+    "key": "thiamin",
+    "name": "Thiamin (B1)",
+    "unit": "mg",
+    "rec": {
+      "display": "1,0",
+      "unit": "mg/Tag",
+      "min": 1.0,
+      "max": 1.0
+    }
+  },
+  {
+    "key": "riboflavin",
+    "name": "Riboflavin (B2)",
+    "unit": "mg",
+    "rec": {
+      "display": "1,1",
+      "unit": "mg/Tag",
+      "min": 1.1,
+      "max": 1.1
+    }
+  },
+  {
+    "key": "niacin",
+    "name": "Niacin (B3)",
+    "unit": "mg",
+    "rec": {
+      "display": "12",
+      "unit": "mg/Tag",
+      "min": 12.0,
+      "max": 12.0
+    }
+  },
+  {
+    "key": "pantothensaeure",
+    "name": "Pantothensäure (B5)",
+    "unit": "mg",
+    "rec": {
+      "display": "5",
+      "unit": "mg/Tag",
+      "min": 5.0,
+      "max": 5.0
+    }
+  },
+  {
+    "key": "pyridoxin",
+    "name": "Pyridoxin (B6)",
+    "unit": "mg",
+    "rec": {
+      "display": "1,4",
+      "unit": "mg/Tag",
+      "min": 1.4,
+      "max": 1.4
+    }
+  },
+  {
+    "key": "biotin",
+    "name": "Biotin (B7)",
+    "unit": "µg",
+    "rec": {
+      "display": "40",
+      "unit": "µg/Tag",
+      "min": 40.0,
+      "max": 40.0
+    }
+  },
+  {
+    "key": "folsaeure",
+    "name": "Folsäure (B9)",
+    "unit": "µg",
+    "rec": {
+      "display": "300",
+      "unit": "µg/Tag",
+      "min": 300.0,
+      "max": 300.0
+    }
+  },
+  {
+    "key": "vitamin_c",
+    "name": "Vitamin C",
+    "unit": "mg",
+    "rec": {
+      "display": "95",
+      "unit": "mg/Tag",
+      "min": 95.0,
+      "max": 95.0
+    }
+  },
+  {
+    "key": "vitamin_e",
+    "name": "Vitamin E",
+    "unit": "mg",
+    "rec": {
+      "display": "8",
+      "unit": "mg/Tag",
+      "min": 8.0,
+      "max": 8.0
+    }
+  },
+  {
+    "key": "vitamin_k",
+    "name": "Vitamin K",
+    "unit": "µg",
+    "rec": {
+      "display": "60",
+      "unit": "µg/Tag",
+      "min": 60.0,
+      "max": 60.0
+    }
+  },
+  {
+    "key": "zink",
+    "name": "Zink",
+    "unit": "mg",
+    "rec": {
+      "display": "10",
+      "unit": "mg/Tag",
+      "min": 10.0,
+      "max": 10.0
+    }
+  }
+]
